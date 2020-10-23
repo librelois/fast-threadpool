@@ -1,0 +1,14 @@
+[package]
+name = "fast-threadpool"
+version = "0.1.0"
+authors = ["librelois <c@elo.tf>"]
+edition = "2018"
+readme = "README.md"
+
+[dependencies]
+flume = "0.9.1"
+num_cpus = "1.13.0"
+oneshot = "0.1.2"
+
+[dev-dependencies]
+futures = "0.3.7"
