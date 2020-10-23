@@ -7,6 +7,29 @@
 //!
 //! This implementation allows you to wait for the result of a job asynchronously,
 //! so you can use it as a replacement for the `spawn_blocking` function of your async runtime.
+//!
+//! ## Use
+//! ```rust
+//! use fast_threadpool::{ThreadPool, ThreadPoolConfig};
+//!
+//! let threadpool = ThreadPool::start(ThreadPoolConfig::default(), ()).into_sync_handler();
+//!
+//! assert_eq!(4, threadpool.execute(|_| { 2 + 2 })?);
+//! # Ok::<(), fast_threadpool::ThreadPoolDisconnected>(())
+//! ```
+//!
+//! ## Use from async task
+//!
+//! ```rust
+//! # futures::executor::block_on(async {
+//! use fast_threadpool::{ThreadPool, ThreadPoolConfig};
+//
+//! let threadpool = ThreadPool::start(ThreadPoolConfig::default(), ()).into_async_handler();
+//!
+//! assert_eq!(4, threadpool.execute(|_| { 2 + 2 }).await?);
+//! # Ok::<(), fast_threadpool::ThreadPoolDisconnected>(())
+//! # });
+//! ```
 
 #![cfg_attr(test, recursion_limit = "256")]
 #![deny(
@@ -105,8 +128,7 @@ mod tests {
 
     #[test]
     fn test_sync() -> Result<(), ThreadPoolDisconnected> {
-        let shared = 42;
-        let tp = ThreadPool::start(ThreadPoolConfig::default(), shared);
+        let tp = ThreadPool::start(ThreadPoolConfig::default(), ());
 
         let tp_handler = tp.into_sync_handler();
 
