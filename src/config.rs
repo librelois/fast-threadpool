@@ -27,6 +27,17 @@ impl Default for ThreadPoolConfig {
 }
 
 impl ThreadPoolConfig {
+    /// Low configuration
+    pub fn low() -> Self {
+        ThreadPoolConfig {
+            keep_alive: Duration::from_secs(5),
+            min_workers: unsafe { NonZeroU16::new_unchecked(1) },
+            max_workers: unsafe { NonZeroU16::new_unchecked(3) },
+            min_available_workers: unsafe { NonZeroU16::new_unchecked(1) },
+            max_available_workers: unsafe { NonZeroU16::new_unchecked(3) },
+            queue_size: Some(4),
+        }
+    }
     ///
     pub fn keep_alive(mut self, keep_alive: u64) -> Self {
         self.keep_alive = Duration::from_secs(keep_alive);
