@@ -68,6 +68,13 @@ use std::{
 /// Thread pool disconnected
 pub struct ThreadPoolDisconnected;
 
+impl std::fmt::Display for ThreadPoolDisconnected {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Thread pool disconnected")
+    }
+}
+impl std::error::Error for ThreadPoolDisconnected {}
+
 #[derive(Debug)]
 /// A fast thread pool (never pay the cost of thread spawn.)
 ///
