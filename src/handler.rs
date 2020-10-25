@@ -38,7 +38,7 @@ impl<Shared: 'static + Clone + Send> ThreadPoolSyncHandler<Shared> {
     pub(crate) fn new(sender: Sender<MsgForWorker<Shared>>) -> ThreadPoolSyncHandler<Shared> {
         ThreadPoolSyncHandler { sender }
     }
-    /// Execute the given closure and block the current thread until finished
+    /// Execute the given job and block the current thread until finished.
     /// If you need a non blocking method, see `ThreadPoolAsyncHandler`.
     pub fn execute<F, R>(&self, f: F) -> Result<R, ThreadPoolDisconnected>
     where
@@ -53,5 +53,21 @@ impl<Shared: 'static + Clone + Send> ThreadPoolSyncHandler<Shared> {
             .map_err(|_| ThreadPoolDisconnected)?;
 
         r.recv().map_err(|_| ThreadPoolDisconnected)
+    }
+    /// Launch the given job and return a oneshot receiver that listen job result.
+    /// If you need a non blocking method, see `ThreadPoolAsyncHandler`.
+    pub fn launch<F, R>(&self, f: F) -> Result<OneshotReceiver<R>, ThreadPoolDisconnected>
+    where
+        F: 'static + Send + FnOnce(&Shared) -> R,
+        R: 'static + Send,
+    {
+        let (s, r) = oneshot::channel();
+        self.sender
+            .send(MsgForWorker::NewJob(Box::new(move |shared| {
+                let _ = s.send(f(shared));
+            })))
+            .map_err(|_| ThreadPoolDisconnected)?;
+
+        Ok(r)
     }
 }

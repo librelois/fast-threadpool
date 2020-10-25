@@ -51,10 +51,11 @@ mod worker;
 
 pub use crate::config::ThreadPoolConfig;
 pub use crate::handler::{ThreadPoolAsyncHandler, ThreadPoolSyncHandler};
+pub use oneshot::Receiver as OneshotReceiver;
 
 use crate::state::State;
 use crate::worker::{MsgForWorker, Worker};
-use flume::{Receiver, RecvTimeoutError, Sender};
+use flume::{Receiver as FlumeReceiver, RecvTimeoutError, Sender};
 use std::{
     num::NonZeroU16,
     sync::{
@@ -140,6 +141,22 @@ mod tests {
         let tp_handler = tp.into_sync_handler();
 
         assert_eq!(4, tp_handler.execute(|_| { 2 + 2 })?);
+
+        let start = Instant::now();
+
+        let r1 = tp_handler.launch(|_| std::thread::sleep(Duration::from_secs(1)))?;
+        let r2 = tp_handler.launch(|_| std::thread::sleep(Duration::from_secs(1)))?;
+        let r3 = tp_handler.launch(|_| std::thread::sleep(Duration::from_secs(1)))?;
+        let r4 = tp_handler.launch(|_| std::thread::sleep(Duration::from_secs(1)))?;
+
+        r1.recv().expect("ThreadPool disconnected");
+        r2.recv().expect("ThreadPool disconnected");
+        r3.recv().expect("ThreadPool disconnected");
+        r4.recv().expect("ThreadPool disconnected");
+
+        let elapsed = start.elapsed();
+
+        assert!(elapsed.as_secs() < 2);
 
         Ok(())
     }
