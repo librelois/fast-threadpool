@@ -14,9 +14,9 @@ impl<Shared: 'static + Clone + Send> ThreadPoolAsyncHandler<Shared> {
     pub async fn execute<F, R>(&self, f: F) -> Result<R, ThreadPoolDisconnected>
     where
         F: 'static + Send + FnOnce(&Shared) -> R,
-        R: 'static + Send,
+        R: 'static + Send + Sync,
     {
-        let (s, r) = oneshot::channel();
+        let (s, r) = async_oneshot::oneshot();
         self.sender
             .send_async(MsgForWorker::NewJob(Box::new(move |shared| {
                 let _ = s.send(f(shared));
@@ -45,7 +45,7 @@ impl<Shared: 'static + Clone + Send> ThreadPoolSyncHandler<Shared> {
         F: 'static + Send + FnOnce(&Shared) -> R,
         R: 'static + Send,
     {
-        let (s, r) = oneshot::channel();
+        let (s, r) = flume::bounded(1);
         self.sender
             .send(MsgForWorker::NewJob(Box::new(move |shared| {
                 let _ = s.send(f(shared));
@@ -56,18 +56,27 @@ impl<Shared: 'static + Clone + Send> ThreadPoolSyncHandler<Shared> {
     }
     /// Launch the given job and return a oneshot receiver that listen job result.
     /// If you need a non blocking method, see `ThreadPoolAsyncHandler`.
-    pub fn launch<F, R>(&self, f: F) -> Result<OneshotReceiver<R>, ThreadPoolDisconnected>
+    pub fn launch<F, R>(&self, f: F) -> Result<JoinHandle<R>, ThreadPoolDisconnected>
     where
         F: 'static + Send + FnOnce(&Shared) -> R,
         R: 'static + Send,
     {
-        let (s, r) = oneshot::channel();
+        let (s, r) = flume::bounded(1);
         self.sender
             .send(MsgForWorker::NewJob(Box::new(move |shared| {
                 let _ = s.send(f(shared));
             })))
             .map_err(|_| ThreadPoolDisconnected)?;
 
-        Ok(r)
+        Ok(JoinHandle(r))
+    }
+}
+
+#[derive(Debug)]
+pub struct JoinHandle<R>(FlumeReceiver<R>);
+
+impl<R> JoinHandle<R> {
+    pub fn join(self) -> Result<R, ThreadPoolDisconnected> {
+        self.0.recv().map_err(|_| ThreadPoolDisconnected)
     }
 }

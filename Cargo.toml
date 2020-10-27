@@ -8,9 +8,9 @@ readme = "README.md"
 license = "MIT"
 
 [dependencies]
+async-oneshot = "0.4.2"
 flume = "0.9.1"
 num_cpus = "1.13.0"
-oneshot = "0.1.2"
 
 [dev-dependencies]
 futures = "0.3.7"

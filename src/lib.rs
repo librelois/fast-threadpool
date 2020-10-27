@@ -51,7 +51,6 @@ mod worker;
 
 pub use crate::config::ThreadPoolConfig;
 pub use crate::handler::{ThreadPoolAsyncHandler, ThreadPoolSyncHandler};
-pub use oneshot::Receiver as OneshotReceiver;
 
 use crate::state::State;
 use crate::worker::{MsgForWorker, Worker};
@@ -149,10 +148,10 @@ mod tests {
         let r3 = tp_handler.launch(|_| std::thread::sleep(Duration::from_secs(1)))?;
         let r4 = tp_handler.launch(|_| std::thread::sleep(Duration::from_secs(1)))?;
 
-        r1.recv().expect("ThreadPool disconnected");
-        r2.recv().expect("ThreadPool disconnected");
-        r3.recv().expect("ThreadPool disconnected");
-        r4.recv().expect("ThreadPool disconnected");
+        r1.join().expect("ThreadPool disconnected");
+        r2.join().expect("ThreadPool disconnected");
+        r3.join().expect("ThreadPool disconnected");
+        r4.join().expect("ThreadPool disconnected");
 
         let elapsed = start.elapsed();
 
