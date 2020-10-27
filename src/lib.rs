@@ -54,7 +54,7 @@ pub use crate::handler::{ThreadPoolAsyncHandler, ThreadPoolSyncHandler};
 
 use crate::state::State;
 use crate::worker::{MsgForWorker, Worker};
-use flume::{Receiver as FlumeReceiver, RecvTimeoutError, Sender};
+use flume::{Receiver as FlumeReceiver, RecvTimeoutError, Sender as FlumeSender};
 use std::{
     num::NonZeroU16,
     sync::{
@@ -79,7 +79,7 @@ impl std::error::Error for ThreadPoolDisconnected {}
 /// A fast thread pool (never pay the cost of thread spawn.)
 ///
 pub struct ThreadPool<Shared: 'static + Clone + Send> {
-    sender: Sender<MsgForWorker<Shared>>,
+    sender: FlumeSender<MsgForWorker<Shared>>,
 }
 
 impl<Shared: 'static + Clone + Send> ThreadPool<Shared> {

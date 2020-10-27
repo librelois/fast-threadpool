@@ -9,7 +9,7 @@ pub(crate) enum MsgForWorker<Shared: Clone + Send> {
 pub(crate) struct Worker<Shared: 'static + Clone + Send> {
     keep_alive: Duration,
     receiver: FlumeReceiver<MsgForWorker<Shared>>,
-    sender: Sender<MsgForWorker<Shared>>,
+    sender: FlumeSender<MsgForWorker<Shared>>,
     shared: Shared,
     state: State,
 }
@@ -18,7 +18,7 @@ impl<Shared: 'static + Clone + Send> Worker<Shared> {
     pub(crate) fn new(
         keep_alive: Duration,
         receiver: FlumeReceiver<MsgForWorker<Shared>>,
-        sender: Sender<MsgForWorker<Shared>>,
+        sender: FlumeSender<MsgForWorker<Shared>>,
         shared: Shared,
         state: State,
     ) -> Self {
