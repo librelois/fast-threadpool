@@ -74,9 +74,11 @@ impl<Shared: 'static + Clone + Send> ThreadPoolSyncHandler<Shared> {
 }
 
 #[derive(Debug)]
+/// Join handle
 pub struct JoinHandle<R>(FlumeSender<R>, FlumeReceiver<R>);
 
 impl<R> JoinHandle<R> {
+    /// Block the current thread until job finished
     pub fn join(self) -> Result<R, ThreadPoolDisconnected> {
         self.1.recv().map_err(|_| ThreadPoolDisconnected)
     }

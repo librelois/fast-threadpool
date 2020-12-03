@@ -50,7 +50,7 @@ mod state;
 mod worker;
 
 pub use crate::config::ThreadPoolConfig;
-pub use crate::handler::{ThreadPoolAsyncHandler, ThreadPoolSyncHandler};
+pub use crate::handler::{JoinHandle, ThreadPoolAsyncHandler, ThreadPoolSyncHandler};
 
 use crate::state::State;
 use crate::worker::{MsgForWorker, Worker};
