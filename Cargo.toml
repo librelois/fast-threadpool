@@ -1,6 +1,6 @@
 [package]
 name = "fast-threadpool"
-version = "0.2.3-alpha.0"
+version = "0.2.3"
 authors = ["librelois <c@elo.tf>"]
 edition = "2018"
 description = "Thread-pool implementation optimized to minimize latency."
