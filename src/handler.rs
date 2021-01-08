@@ -1,11 +1,13 @@
 use crate::*;
 
+#[cfg(feature = "async")]
 #[derive(Clone, Debug)]
 /// Asynchronous handler to execute jobs on the thread pool
 pub struct ThreadPoolAsyncHandler<Shared: 'static + Clone + Send> {
     sender: FlumeSender<MsgForWorker<Shared>>,
 }
 
+#[cfg(feature = "async")]
 impl<Shared: 'static + Clone + Send> ThreadPoolAsyncHandler<Shared> {
     pub(crate) fn new(sender: FlumeSender<MsgForWorker<Shared>>) -> ThreadPoolAsyncHandler<Shared> {
         ThreadPoolAsyncHandler { sender }

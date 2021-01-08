@@ -21,6 +21,7 @@
 //! ## Use from async task
 //!
 //! ```rust
+//! # #[cfg(feature = "async")]
 //! # futures::executor::block_on(async {
 //! use fast_threadpool::{ThreadPool, ThreadPoolConfig};
 //
@@ -50,7 +51,9 @@ mod state;
 mod worker;
 
 pub use crate::config::ThreadPoolConfig;
-pub use crate::handler::{JoinHandle, ThreadPoolAsyncHandler, ThreadPoolSyncHandler};
+#[cfg(feature = "async")]
+pub use crate::handler::ThreadPoolAsyncHandler;
+pub use crate::handler::{JoinHandle, ThreadPoolSyncHandler};
 
 use crate::state::State;
 use crate::worker::{MsgForWorker, Worker};
@@ -106,6 +109,7 @@ impl<Shared: 'static + Clone + Send> ThreadPool<Shared> {
 
         ThreadPool { sender }
     }
+    #[cfg(feature = "async")]
     /// Get an asynchronous handler
     pub fn async_handler(&self) -> ThreadPoolAsyncHandler<Shared> {
         ThreadPoolAsyncHandler::new(self.sender.clone())
@@ -114,6 +118,7 @@ impl<Shared: 'static + Clone + Send> ThreadPool<Shared> {
     pub fn sync_handler(&self) -> ThreadPoolSyncHandler<Shared> {
         ThreadPoolSyncHandler::new(self.sender.clone())
     }
+    #[cfg(feature = "async")]
     /// Convert threadpool into an asynchronous handler
     pub fn into_async_handler(self) -> ThreadPoolAsyncHandler<Shared> {
         ThreadPoolAsyncHandler::new(self.sender)
@@ -131,6 +136,7 @@ mod tests {
     use super::*;
     use std::time::Instant;
 
+    #[cfg(feature = "async")]
     const FOUR: NonZeroU16 = unsafe { NonZeroU16::new_unchecked(4) };
 
     #[test]
@@ -160,6 +166,7 @@ mod tests {
         Ok(())
     }
 
+    #[cfg(feature = "async")]
     #[test]
     fn test_async() -> Result<(), ThreadPoolDisconnected> {
         futures::executor::block_on(async {
