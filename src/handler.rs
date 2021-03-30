@@ -73,6 +73,26 @@ impl<Shared: 'static + Clone + Send> ThreadPoolSyncHandler<Shared> {
 
         Ok(JoinHandle(s, r))
     }
+
+    /// Launch the given job and return immediately. When the job finished, send the job result
+    /// in the provided channel  
+    pub fn launch_channel<F, R>(
+        &self,
+        f: F,
+        s: flume::Sender<R>,
+    ) -> Result<(), ThreadPoolDisconnected>
+    where
+        F: 'static + Send + FnOnce(&Shared) -> R,
+        R: 'static + Send,
+    {
+        self.sender
+            .send(MsgForWorker::NewJob(Box::new(move |shared| {
+                let _ = s.send(f(shared));
+            })))
+            .map_err(|_| ThreadPoolDisconnected)?;
+
+        Ok(())
+    }
 }
 
 #[derive(Debug)]
